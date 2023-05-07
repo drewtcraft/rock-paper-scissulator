@@ -49,28 +49,9 @@ impl AssociatedString for Scissors {
     const STRING: &'static str = "scissors";
 }
 
-// TODO get rid of this thing
-pub enum RoShamBo {
-    Rock,
-    Paper,
-    Scissors,
-}
-
 // all Rock, Paper, or Scissors bundles will include this component
 #[derive(Component)]
 pub struct IsInFoodChain;
-
-impl ToString for RoShamBo {
-    fn to_string(&self) -> String {
-        match self {
-            RoShamBo::Rock => "rock".to_string(),
-            RoShamBo::Paper => "paper".to_string(),
-            RoShamBo::Scissors => "scissors".to_string(),
-        }
-    }
-}
-
-pub const ROSHAMBO_ENUM_VALUES: [RoShamBo; 3] = [RoShamBo::Rock, RoShamBo::Paper, RoShamBo::Scissors];
 
 pub fn spawn_camera_ssys(
     mut commands: Commands,
@@ -96,45 +77,33 @@ pub fn spawn_rocks_papers_scissors_ssys(
     let window = window_query.get_single()
         .expect("There is no window, how is this possible?");
 
-    for entity_type in ROSHAMBO_ENUM_VALUES {
-        for _ in  0..ENTITY_COUNT {
-            spawn_entity(&mut commands, window, &asset_server, &entity_type);
-        }
+    let texture = asset_server.load(format!("sprites/{}.png", Rock::STRING));
+    for _ in  0..ENTITY_COUNT {
+        spawn_entity::<Rock>(&mut commands, window, texture.clone());
+    }
+
+    let texture = asset_server.load(format!("sprites/{}.png", Paper::STRING));
+    for _ in  0..ENTITY_COUNT {
+        spawn_entity::<Paper>(&mut commands, window, texture.clone());
+    }
+
+    let texture = asset_server.load(format!("sprites/{}.png", Scissors::STRING));
+    for _ in  0..ENTITY_COUNT {
+        spawn_entity::<Scissors>(&mut commands, window, texture.clone());
     }
 }
 
-// TODO make generic
-pub fn spawn_entity(
+pub fn spawn_entity<T: Component + Default + AssociatedString>(
     commands: &mut Commands,
     window: &Window, 
-    asset_server: &Res<AssetServer>,
-    entity_type: &RoShamBo
+    texture: Handle<Image>
 ) {
     let transform = generate_random_transform(window);
-    let texture = asset_server.load(format!("sprites/{}.png", entity_type.to_string()));
-    match entity_type {
-        RoShamBo::Rock => {
-            commands.spawn((
-                SpriteBundle { transform, texture, ..default() },
-                Rock,
-                IsInFoodChain,
-            ));
-        },
-        RoShamBo::Paper => {
-            commands.spawn((
-                SpriteBundle { transform, texture, ..default() },
-                Paper,
-                IsInFoodChain,
-            ));
-        }, 
-        RoShamBo::Scissors => {
-            commands.spawn((
-                SpriteBundle { transform, texture, ..default() },
-                Scissors,
-                IsInFoodChain,
-            ));
-        }
-    }
+    commands.spawn((
+        SpriteBundle { transform, texture, ..default() },
+        T::default(),
+        IsInFoodChain,
+    ));
 }
 
 pub fn generate_random_transform(window: &Window) -> Transform {
