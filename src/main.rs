@@ -6,7 +6,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
 
         .add_startup_system(spawn_camera_ssys)
-        .add_startup_system(spawn_rocks_papers_scissors_ssys)
+        .add_startup_system(spawn_entities_ssys)
 
         .add_system(movement_sys::<Rock, Paper, Scissors>)
         .add_system(movement_sys::<Paper, Scissors, Rock>)
@@ -19,7 +19,7 @@ fn main() {
         .run();
 }
 
-pub const ENTITY_COUNT: u16 = 5;
+pub const ENTITY_COUNT: u16 = 20;
 pub const ENTITY_SPEED: f32 = 100.0;
 pub const ENTITY_SIZE: f32 = 64.0;
 pub const ENTITY_HALF_SIZE: f32 = 32.0;
@@ -68,12 +68,11 @@ pub fn spawn_camera_ssys(
     );
 }
 
-pub fn spawn_rocks_papers_scissors_ssys(
+pub fn spawn_entities_ssys(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>
 ) {
-
     let window = window_query.get_single()
         .expect("There is no window, how is this possible?");
 
@@ -93,7 +92,7 @@ pub fn spawn_rocks_papers_scissors_ssys(
     }
 }
 
-pub fn spawn_entity<T: Component + Default + AssociatedString>(
+pub fn spawn_entity<T: Component + Default>(
     commands: &mut Commands,
     window: &Window, 
     texture: Handle<Image>
@@ -253,3 +252,17 @@ pub fn detect_collisions_from_predators_sys<O: Component, H: Component + Default
         }
     }
 }
+
+// pub fn maintain_personal_space_sys<T: Component>(
+//     mut entity_query: Query<&mut Transform, With<T>>
+// ) { 
+//     let mut vv: Vec<Vec3> = vec!();
+//     for mut current in entity_query.iter_mut() {
+//         for existing_translation in vv {
+//             if existing_translation.distance(current.translation) < (ENTITY_SIZE - 5.0) {
+//                 current.translation += 
+//             }
+//         }
+//         vv.push(current.translation.clone());
+//     }
+// }
