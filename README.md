@@ -12,3 +12,4 @@
 - pause stack
 - UI to control speed, entity quantity
 - Do not spawn entities on top of each other
+- entities face the direction they're moving
