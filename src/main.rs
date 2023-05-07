@@ -15,14 +15,18 @@ fn main() {
         .add_system(detect_collisions_from_predators_sys::<Rock, Paper>)
         .add_system(detect_collisions_from_predators_sys::<Paper, Scissors>)
         .add_system(detect_collisions_from_predators_sys::<Scissors, Rock>)
+        .add_system(maintain_personal_space_sys::<Rock>)
+        .add_system(maintain_personal_space_sys::<Paper>)
+        .add_system(maintain_personal_space_sys::<Scissors>)
 
         .run();
 }
 
-pub const ENTITY_COUNT: u16 = 20;
+pub const ENTITY_COUNT: u16 = 5;
 pub const ENTITY_SPEED: f32 = 100.0;
 pub const ENTITY_SIZE: f32 = 64.0;
 pub const ENTITY_HALF_SIZE: f32 = 32.0;
+pub const TIME_FACTOR: f32 = 2.0;
 
 pub trait AssociatedString {
     const STRING: &'static str;
@@ -137,7 +141,7 @@ pub fn movement_sys<O: Component, H: Component, L: Component>(
             if direction.length() > 0.0 {
                 direction = direction.normalize();
             }
-            transform.translation += direction * ENTITY_SPEED * time.delta_seconds();
+            transform.translation += direction * ENTITY_SPEED * (time.delta_seconds() * TIME_FACTOR);
         }
     }
 }
@@ -253,16 +257,22 @@ pub fn detect_collisions_from_predators_sys<O: Component, H: Component + Default
     }
 }
 
-// pub fn maintain_personal_space_sys<T: Component>(
-//     mut entity_query: Query<&mut Transform, With<T>>
-// ) { 
-//     let mut vv: Vec<Vec3> = vec!();
-//     for mut current in entity_query.iter_mut() {
-//         for existing_translation in vv {
-//             if existing_translation.distance(current.translation) < (ENTITY_SIZE - 5.0) {
-//                 current.translation += 
-//             }
-//         }
-//         vv.push(current.translation.clone());
-//     }
-// }
+pub fn maintain_personal_space_sys<T: Component>(
+    mut entity_query: Query<&mut Transform, With<T>>,
+    time: Res<Time>,
+) { 
+    let mut vv: Vec<Vec3> = vec!();
+    for mut current in entity_query.iter_mut() {
+        for existing_translation in &vv {
+            if existing_translation.distance(current.translation) < (ENTITY_SIZE + 5.0) {
+                let direction = Vec3::new(
+                    if current.translation.x - existing_translation.x >= 0.0 { 1.0 } else {-1.0},
+                    if current.translation.y - existing_translation.y >= 0.0 { 1.0 } else {-1.0}, 
+                    0.0
+                );
+                current.translation += direction * ENTITY_SPEED * (time.delta_seconds() * TIME_FACTOR);
+            }
+        }
+        vv.push(current.translation.clone());
+    }
+}
