@@ -28,7 +28,7 @@ pub fn entity_movement<O: Component, H: Component, L: Component>(
             if direction.length() > 0.0 {
                 direction = direction.normalize();
             }
-            transform.translation += direction * ENTITY_SPEED * (time.delta_seconds() * TIME_FACTOR);
+            transform.translation += direction * ENTITY_MAX_SPEED * (time.delta_seconds() * TIME_FACTOR);
         }
     }
 }
@@ -157,7 +157,7 @@ pub fn maintain_personal_space<T: Component>(
                     if current.translation.y - existing_translation.y >= 0.0 { 1.0 } else {-1.0}, 
                     0.0
                 );
-                current.translation += direction * ENTITY_SPEED * (time.delta_seconds() * TIME_FACTOR);
+                current.translation += direction * ENTITY_MAX_SPEED * (time.delta_seconds() * TIME_FACTOR);
             }
         }
         vv.push(current.translation.clone());
