@@ -7,9 +7,18 @@ use components::{Rock, Paper, Scissors};
 
 use bevy::prelude::*;
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Default, States)]
+pub enum AppState {
+    #[default]
+    MainMenu,
+    SimulationRunning,
+    Paused,
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_state::<AppState>()
 
         .add_startup_system(startup_systems::spawn_camera)
         .add_startup_system(startup_systems::spawn_entities)
@@ -24,6 +33,7 @@ fn main() {
         .add_system(systems::maintain_personal_space::<Rock>)
         .add_system(systems::maintain_personal_space::<Paper>)
         .add_system(systems::maintain_personal_space::<Scissors>)
+        .add_system(systems::is_game_over)
 
         .run();
 }

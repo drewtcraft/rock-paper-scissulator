@@ -28,3 +28,6 @@ impl AssociatedString for Scissors {
 // all Rock, Paper, or Scissors bundles will include this component
 #[derive(Component)]
 pub struct IsInFoodChain;
+
+#[derive(Component)]
+pub struct Velocity(pub Vec3);

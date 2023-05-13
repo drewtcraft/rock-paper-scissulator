@@ -1,10 +1,10 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::utils::*;
-use crate::components::{AssociatedString, IsInFoodChain};
+use crate::components::{AssociatedString, IsInFoodChain, Velocity, Rock, Paper, Scissors};
 
 pub fn entity_movement<O: Component, H: Component, L: Component>(
-    mut own_query: Query<&mut Transform, With<O>>,
+    mut own_query: Query<(&mut Transform, &mut Velocity), With<O>>,
     predators_query: Query<&Transform, (With<H>, Without<O>)>,
     prey_query: Query<&Transform, (With<L>, Without<O>)>,
     time: Res<Time>
@@ -17,7 +17,7 @@ pub fn entity_movement<O: Component, H: Component, L: Component>(
         .map(|t| {t.translation })
         .collect();
 
-    for mut transform in own_query.iter_mut() {
+    for (mut transform, mut velocity) in own_query.iter_mut() {
         let direction = get_own_direction(
             &transform, 
             predator_positions.clone(), 
@@ -28,7 +28,9 @@ pub fn entity_movement<O: Component, H: Component, L: Component>(
             if direction.length() > 0.0 {
                 direction = direction.normalize();
             }
-            transform.translation += direction * ENTITY_MAX_SPEED * (time.delta_seconds() * TIME_FACTOR);
+            velocity.0 += (direction * ENTITY_ACCELERATION).clamp(Vec3::new(-ENTITY_MAX_SPEED, -ENTITY_MAX_SPEED, 0.0), Vec3::new(ENTITY_MAX_SPEED, ENTITY_MAX_SPEED, 0.0));
+;
+            transform.translation += velocity.0 * (time.delta_seconds() * TIME_FACTOR);
         }
     }
 }
@@ -144,12 +146,14 @@ pub fn detect_collisions_from_predators<O: Component, H: Component + Default + A
     }
 }
 
+// TODO: this function name is fun but this whole thing 
+//  could be folded into the movement system
 pub fn maintain_personal_space<T: Component>(
-    mut entity_query: Query<&mut Transform, With<T>>,
+    mut entity_query: Query<(&mut Transform, &mut Velocity), With<T>>,
     time: Res<Time>,
 ) { 
     let mut vv: Vec<Vec3> = vec!();
-    for mut current in entity_query.iter_mut() {
+    for (mut current, mut velocity) in entity_query.iter_mut() {
         for existing_translation in &vv {
             if existing_translation.distance(current.translation) < (ENTITY_SIZE + 5.0) {
                 let direction = Vec3::new(
@@ -157,9 +161,26 @@ pub fn maintain_personal_space<T: Component>(
                     if current.translation.y - existing_translation.y >= 0.0 { 1.0 } else {-1.0}, 
                     0.0
                 );
-                current.translation += direction * ENTITY_MAX_SPEED * (time.delta_seconds() * TIME_FACTOR);
+
+                // accelerate faster when avoiding same type of self
+                velocity.0 += (direction * ENTITY_ACCELERATION * 3.0).clamp(Vec3::new(-ENTITY_MAX_SPEED, -ENTITY_MAX_SPEED, 0.0), Vec3::new(ENTITY_MAX_SPEED, ENTITY_MAX_SPEED, 0.0));
+                current.translation += velocity.0 * (time.delta_seconds() * TIME_FACTOR);
             }
         }
         vv.push(current.translation.clone());
+    }
+}
+
+pub fn is_game_over(
+    rocks_query: Query<&Rock>,
+    papers_query: Query<&Paper>,
+    scissors_query: Query<&Scissors>,
+) {
+    let no_rocks = rocks_query.is_empty();
+    let no_papers = papers_query.is_empty();
+    let no_scissors = scissors_query.is_empty();
+    let my_stuff: [bool; 3] = [no_rocks, no_papers, no_scissors];
+    if my_stuff.iter().any(|f| {*f}) {
+        println!("game over!!!!");
     }
 }

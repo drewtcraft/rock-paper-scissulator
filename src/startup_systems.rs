@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use crate::components::{Rock, Paper, Scissors, IsInFoodChain, AssociatedString};
+use crate::components::{Rock, Paper, Scissors, IsInFoodChain, AssociatedString, Velocity};
 use crate::utils::{ENTITY_COUNT, generate_exclusive_transform};
 
 pub fn spawn_camera(
@@ -55,5 +55,6 @@ pub fn spawn_entity<T: Component + Default>(
         SpriteBundle { transform, texture, ..default() },
         T::default(),
         IsInFoodChain,
+        Velocity(Vec3::ZERO),
     ));
 }
