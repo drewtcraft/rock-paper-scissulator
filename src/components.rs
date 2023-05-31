@@ -31,3 +31,12 @@ pub struct IsInFoodChain;
 
 #[derive(Component)]
 pub struct Velocity(pub Vec3);
+
+#[derive(Component)]
+pub struct MainMenu;
+
+#[derive(Component)]
+pub struct PlayButton;
+
+#[derive(Component)]
+pub struct PauseButton;
