@@ -26,9 +26,11 @@ pub struct SimulationPlugin;
 
 impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            startup_systems::spawn_entities.in_schedule(OnEnter(AppState::SimulationRunning)),
+        app.add_systems(
+            (startup_systems::spawn_entities, systems::spawn_play_toggle)
+                .in_schedule(OnEnter(AppState::SimulationRunning)),
         )
+        .add_systems((systems::play_toggle_interaction,))
         .add_systems(
             (
                 systems::entity_movement::<Rock, Paper, Scissors>,
@@ -43,7 +45,8 @@ impl Plugin for SimulationPlugin {
                 systems::maintain_personal_space::<Scissors>,
                 systems::is_game_over,
             )
-                .in_set(OnUpdate(AppState::SimulationRunning)),
+                .in_set(OnUpdate(AppState::SimulationRunning))
+                .in_set(OnUpdate(PlayState::Playing)),
         );
     }
 }
