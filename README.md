@@ -9,7 +9,7 @@
 - ~entity acceleration~
 - better sprites and sprite animations
 - convert-to animation (e.g. rock converting to paper)
-- pause stack
+- ~pause stack~
 - UI to control speed, entity quantity
 - ~Do not spawn entities on top of each other~
 - entities face the direction they're moving

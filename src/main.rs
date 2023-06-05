@@ -30,7 +30,7 @@ impl Plugin for SimulationPlugin {
             (startup_systems::spawn_entities, systems::spawn_play_toggle)
                 .in_schedule(OnEnter(AppState::SimulationRunning)),
         )
-        .add_systems((systems::play_toggle_interaction,))
+        // .add_systems((systems::play_toggle_interaction,))
         .add_systems(
             (
                 systems::entity_movement::<Rock, Paper, Scissors>,
@@ -45,8 +45,7 @@ impl Plugin for SimulationPlugin {
                 systems::maintain_personal_space::<Scissors>,
                 systems::is_game_over,
             )
-                .in_set(OnUpdate(AppState::SimulationRunning))
-                .in_set(OnUpdate(PlayState::Playing)),
+                .in_set(OnUpdate(AppState::SimulationRunning)),
         );
     }
 }

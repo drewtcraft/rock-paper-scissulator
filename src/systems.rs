@@ -2,13 +2,13 @@ use bevy::transform::commands;
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::components::{
-    AssociatedString, IsInFoodChain, MainMenu, Paper, PauseButton, PlayButton, Rock, Scissors,
-    Velocity,
+    Angle, AssociatedString, IsInFoodChain, MainMenu, Paper, PauseButton, PlayButton, Rock,
+    Scissors, Velocity,
 };
 use crate::{utils::*, AppState, PlayState};
 
 pub fn entity_movement<O: Component, H: Component, L: Component>(
-    mut own_query: Query<(&mut Transform, &mut Velocity), With<O>>,
+    mut own_query: Query<(&mut Transform, &mut Velocity, &mut Angle), With<O>>,
     predators_query: Query<&Transform, (With<H>, Without<O>)>,
     prey_query: Query<&Transform, (With<L>, Without<O>)>,
     time: Res<Time>,
@@ -17,7 +17,7 @@ pub fn entity_movement<O: Component, H: Component, L: Component>(
 
     let predator_positions: Vec<Vec3> = predators_query.iter().map(|t| t.translation).collect();
 
-    for (mut transform, mut velocity) in own_query.iter_mut() {
+    for (mut transform, mut velocity, mut angle) in own_query.iter_mut() {
         let direction = get_own_direction(
             &transform,
             predator_positions.clone(),
@@ -28,7 +28,30 @@ pub fn entity_movement<O: Component, H: Component, L: Component>(
             if direction.length() > 0.0 {
                 direction = direction.normalize();
             }
-            velocity.0 += (direction * ENTITY_ACCELERATION).clamp(
+
+            // set new angle unless pointing at proper direction already
+            // if NOT pointed in the right direction, should incur a movement penalty
+            // where 180 difference is 0 movement and facing the right angle is full movement
+
+            let angle_as_radians = angle.0 / 180.0 * std::f32::consts::PI;
+            let anglee = Vec3::new(angle.0.sin(), angle.0.cos(), 0.0);
+            let diff = direction.angle_between(anglee);
+
+            let accel_modifier = if diff < 0.5 {
+                angle.0 -= diff;
+                ENTITY_ACCELERATION
+            } else if diff >= 0.5 && diff < 1.5 {
+                angle.0 += 0.1;
+                ENTITY_ACCELERATION * -2.0
+            } else if diff >= 1.5 {
+                angle.0 -= 0.1;
+                ENTITY_ACCELERATION * -2.0
+            } else {
+                0.0
+            };
+            transform.rotation = Quat::from_rotation_z(angle.0);
+
+            velocity.0 += (direction * accel_modifier).clamp(
                 Vec3::new(-ENTITY_MAX_SPEED, -ENTITY_MAX_SPEED, 0.0),
                 Vec3::new(ENTITY_MAX_SPEED, ENTITY_MAX_SPEED, 0.0),
             );
@@ -203,6 +226,7 @@ pub fn is_game_over(
     rocks_query: Query<&Rock>,
     papers_query: Query<&Paper>,
     scissors_query: Query<&Scissors>,
+    next_game_state: NextState<AppState>,
 ) {
     let no_rocks = rocks_query.is_empty();
     let no_papers = papers_query.is_empty();
@@ -210,6 +234,7 @@ pub fn is_game_over(
     let my_stuff: [bool; 3] = [no_rocks, no_papers, no_scissors];
     if my_stuff.iter().any(|f| *f) {
         println!("game over!!!!");
+        next_game_state.set(AppState::MainMenu);
     }
 }
 

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::prelude::*;
 
 pub trait AssociatedString {
     const STRING: &'static str;
@@ -31,6 +32,15 @@ pub struct IsInFoodChain;
 
 #[derive(Component)]
 pub struct Velocity(pub Vec3);
+
+#[derive(Component)]
+pub struct Angle(pub f32);
+
+impl Angle {
+    pub fn new() -> Self {
+        Self(random::<f32>() * 360.0)
+    }
+}
 
 #[derive(Component)]
 pub struct MainMenu;
