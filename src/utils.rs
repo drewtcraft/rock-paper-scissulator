@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-pub const ENTITY_COUNT: u16 = 10;
+pub const ENTITY_COUNT: u16 = 3;
 pub const ENTITY_MAX_SPEED: f32 = 10.0;
 pub const ENTITY_SIZE: f32 = 64.0;
 pub const ENTITY_HALF_SIZE: f32 = 32.0;

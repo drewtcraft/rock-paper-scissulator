@@ -14,6 +14,15 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
     });
 }
 
+pub fn despawn_entities(
+    mut commands: Commands,
+    entities_query: Query<Entity, With<IsInFoodChain>>,
+) {
+    for entity in entities_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
 pub fn spawn_entities(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,

@@ -226,7 +226,7 @@ pub fn is_game_over(
     rocks_query: Query<&Rock>,
     papers_query: Query<&Paper>,
     scissors_query: Query<&Scissors>,
-    next_game_state: NextState<AppState>,
+    mut next_game_state: ResMut<NextState<AppState>>,
 ) {
     let no_rocks = rocks_query.is_empty();
     let no_papers = papers_query.is_empty();
@@ -344,9 +344,12 @@ pub fn spawn_play_toggle(mut commands: Commands, asset_server: Res<AssetServer>)
         });
 }
 
-pub fn despawn_play_toggle(mut commands: Commands, main_menu_query: Query<Entity, With<MainMenu>>) {
-    if let Ok(main_menu) = main_menu_query.get_single() {
-        commands.entity(main_menu).despawn_recursive();
+pub fn despawn_play_toggle(
+    mut commands: Commands,
+    toggle_button_query: Query<Entity, With<PauseButton>>,
+) {
+    if let Ok(toggle_button) = toggle_button_query.get_single() {
+        commands.entity(toggle_button).despawn_recursive();
     }
 }
 
