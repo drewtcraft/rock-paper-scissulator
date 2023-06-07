@@ -13,6 +13,7 @@ pub enum AppState {
     #[default]
     MainMenu,
     SimulationRunning,
+    SimulationOver,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Default, States)]
@@ -58,13 +59,37 @@ impl Plugin for SimulationPlugin {
     }
 }
 
+pub struct SimulationOverPage;
+
+impl Plugin for SimulationOverPage {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            (
+                systems::spawn_simulation_over_page,
+                systems::spawn_simulation_over_timer,
+            )
+                .in_schedule(OnEnter(AppState::SimulationOver)),
+        )
+        .add_systems(
+            (systems::tick_simulation_over_timer,).in_set(OnUpdate(AppState::SimulationOver)),
+        )
+        .add_systems(
+            (
+                systems::despawn_simulation_over_page,
+                systems::despawn_simulation_over_timer,
+            )
+                .in_schedule(OnExit(AppState::SimulationOver)),
+        );
+    }
+}
+
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(spawn_main_menu.in_schedule(OnEnter(AppState::MainMenu)))
-            .add_system(despawn_main_menu.in_schedule(OnExit(AppState::MainMenu)))
             .add_system(systems::play_button_interaction);
+            .add_system(despawn_main_menu.in_schedule(OnExit(AppState::MainMenu)))
     }
 }
 
@@ -75,6 +100,7 @@ fn main() {
         .add_state::<PlayState>()
         .add_startup_system(startup_systems::spawn_camera)
         .add_plugin(SimulationPlugin)
+        .add_plugin(SimulationOverPage)
         .add_plugin(MainMenuPlugin)
         .run();
 }

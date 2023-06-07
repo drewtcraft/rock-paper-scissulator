@@ -3,7 +3,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::components::{
     Angle, AssociatedString, IsInFoodChain, MainMenu, Paper, PauseButton, PlayButton, Rock,
-    Scissors, Velocity,
+    Scissors, SimulationOverTimer, SimulationPage, Velocity,
 };
 use crate::{utils::*, AppState, PlayState};
 
@@ -402,3 +402,45 @@ pub fn play_button_interaction(
         }
     }
 }
+
+// need resource Changed here!
+pub fn spawn_simulation_over_page(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn((
+            NodeBundle {
+                style: MAIN_MENU_STYLE,
+                ..default()
+            },
+            SimulationPage,
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![TextSection::new(
+                        "game over baybay",
+                        TextStyle {
+                            font: asset_server.load("fonts/FiraSans-Regular.ttf"),
+                            font_size: 64.0,
+                            color: Color::BLACK,
+                        },
+                    )],
+                    ..default()
+                },
+                ..default()
+            });
+        });
+}
+
+pub fn despawn_simulation_over_page(
+    mut commands: Commands,
+    simulation_over_query: Query<Entity, With<SimulationPage>>,
+) {
+    if let Ok(simulation_over_page) = simulation_over_query.get_single() {
+        commands.entity(simulation_over_page).despawn_recursive();
+    }
+}
+
+pub fn spawn_simulation_over_timer(mut commands: Commands, time: Res<Time>) {}
+pub fn despawn_simulation_over_timer(mut commands: Commands, timer: ResMut<SimulationOverTimer>) {}
+
+pub fn tick_simulation_over_timer(mut simulation_over_timer: ResMut<SimulationOverTimer>) {}

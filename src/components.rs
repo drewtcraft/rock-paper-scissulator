@@ -50,3 +50,11 @@ pub struct PlayButton;
 
 #[derive(Component)]
 pub struct PauseButton;
+
+#[derive(Component)]
+pub struct SimulationPage;
+
+#[derive(Resource)]
+pub struct SimulationOverTimer {
+    timer: Timer,
+}
